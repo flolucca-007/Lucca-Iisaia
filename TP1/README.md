@@ -11,7 +11,7 @@
 Este trabajo pone en práctica el rol de arquitecta/supervisora de un 
 agente de IA: especificar con precisión los requisitos (incluyendo una 
 interfaz deliberadamente incómoda pero funcional), verificar la salida 
-generada, y corregir desvíos detectados (ver `Lucca-Isaia_prompts.md`).
+generada, y corregir desvíos detectados (ver `prompts.md`).
 
 ## Descripción del proyecto
 
@@ -87,7 +87,7 @@ todos los lotes antes de acceder al ranking, ranking oculto tras una
 etiqueta genérica, sin vista comparativa directa). La aplicación es 
 completamente funcional y los cálculos son correctos; lo que se dificultó 
 a propósito es el camino para llegar a la información, no la información 
-en sí. El detalle del proceso de diseño está documentado en `Lucca-Isaia_prompts.md`.
+en sí. El detalle del proceso de diseño está documentado en `prompts.md`.
 
 ## Cómo usar la aplicación
 
@@ -109,10 +109,10 @@ en sí. El detalle del proceso de diseño está documentado en `Lucca-Isaia_prom
 La aplicación fue desarrollada mediante interacción iterativa con un 
 agente de IA (Gemini Canvas), en 2 rondas de prompts. El historial 
 completo de prompts utilizados, junto con las verificaciones realizadas 
-en cada iteración, se encuentra en `Lucca-Isaia_prompts.md`.
+en cada iteración, se encuentra en `prompts.md`.
 
 ## Archivos incluidos
 
 - `Lucca-Isaia_app.html` — aplicación funcional.
-- `Lucca-Isaia_prompts.md` — historial de prompts utilizados con el agente de IA.
-- `Lucca-Isaia_README.md` — este archivo.
+- `prompts.md` — historial de prompts utilizados con el agente de IA.
+- `README.md` — este archivo.
