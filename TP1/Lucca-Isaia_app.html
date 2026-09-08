@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación EIQ Field Use - Control de Tizón Tardío en Papa</title>
+    <style>
+        /* Modern System Font Stack & Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary-dark: #065f46;
+            --primary: #059669;
+            --primary-light: #d1fae5;
+            --border-color: #e2e8f0;
+            --border-dark: #cbd5e1;
+            --disabled-bg: #e2e8f0;
+            --disabled-text: #94a3b8;
+            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 3rem;
+        }
+
+        /* Header Layout */
+        header {
+            background-color: var(--primary-dark);
+            color: #ffffff;
+            padding: 1.5rem 1rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .header-container {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-title p {
+            font-size: 0.875rem;
+            color: #a7f3d0;
+            margin-top: 0.25rem;
+        }
+
+        .producer-badge {
+            background-color: rgba(4, 47, 31, 0.6);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            align-self: flex-start;
+        }
+
+        .producer-badge span.label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6ee7b7;
+        }
+
+        .producer-badge span.value {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .card-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-header p {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Tabs styling */
+        .tabs-nav {
+            display: flex;
+            background-color: #e2e8f0;
+            padding: 0.25rem;
+            border-radius: var(--radius);
+            gap: 0.25rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-radius: calc(var(--radius) - 2px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-weight: 700;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn.visited-indicator::after {
+            content: " •";
+            color: var(--primary);
+        }
+
+        /* Table styling */
+        .details-summary-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        @media (min-width: 640px) {
+            .details-summary-box {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .total-eiq-box {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            text-align: right;
+        }
+
+        .total-eiq-box .label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .total-eiq-box .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* Action Button Bar */
+        .action-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-more-info {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-more-info:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-more-info:disabled {
+            background-color: var(--disabled-bg);
+            color: var(--disabled-text);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .visited-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Ranking Section */
+        .ranking-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .ranking-container.visible {
+            display: block;
+        }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .ranking-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .ranking-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ranking-card.rank-1 {
+            border-color: #a7f3d0;
+            background-color: #f0fdf4;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .rank-1 .rank-badge {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .ranking-card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .ranking-card-value {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .ranking-card-value .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .ranking-card-value .number {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="header-title">
+                <h1>Impacto Ambiental de Programas de Fungicidas</h1>
+                <p>Control de Tizón Tardío en Cultivo de Papa &bull; Indicador: EIQ Field Use Rating</p>
+            </div>
+            <div class="producer-badge">
+                <span class="label">Productor</span>
+                <span class="value" id="producer-name">Establecimiento Demostrativo</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Lote Details Section -->
+        <section class="card" aria-labelledby="details-heading">
+            <div class="card-header">
+                <div>
+                    <h2 id="details-heading">Detalle de Aplicaciones por Lote</h2>
+                    <p>Selecciona un lote para explorar las aplicaciones realizadas durante la campaña</p>
+                </div>
+
+                <!-- Lote Navigation Tabs -->
+                <div id="lote-tabs" class="tabs-nav" role="tablist">
+                    <!-- Dynamic Tabs -->
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="lote-detail-content">
+                    <!-- Dynamic Application Details -->
+                </div>
+            </div>
+        </section>
+
+        <!-- More Info Action Button -->
+        <div class="action-bar">
+            <button id="btn-more-info" class="btn-more-info" disabled onclick="toggleRanking()">
+                Más información
+            </button>
+            <p id="visited-hint" class="visited-hint">
+                Consulta los tres lotes (A, B y C) para habilitar más información.
+            </p>
+        </div>
+
+        <!-- Hidden Ranking Section (Revealed on click after visiting all 3 lots) -->
+        <section id="ranking-section" class="card ranking-container" aria-labelledby="ranking-heading">
+            <div class="card-header">
+                <div>
+                    <h2 id="ranking-heading">Ranking de Lotes por Impacto Ambiental Acumulado</h2>
+                    <p>Ordenado de menor a mayor EIQ Field Use acumulado</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="ranking-cards" class="ranking-grid">
+                    <!-- Dynamic Ranking Cards -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Data definition
+        const DATA = {
+            productor: "Establecimiento Demostrativo",
+            lotes: [
+                {
+                    id: "lote-a",
+                    nombre: "Lote A",
+                    aplicaciones: [
+                        { numero: 1, producto: "Bexfond (Corteva)", eiq: 0.8 },
+                        { numero: 2, producto: "Bexfond (Corteva)", eiq: 0.8 },
+                        { numero: 3, producto: "Zorvec Encantia", eiq: 11.2 }
+                    ]
+                },
+                {
+                    id: "lote-b",
+                    nombre: "Lote B",
+                    aplicaciones: [
+                        { numero: 1, producto: "Zorvec Encantia", eiq: 11.2 },
+                        { numero: 2, producto: "Infinito (dosis 1 L/ha)", eiq: 38.7 },
+                        { numero: 3, producto: "Clorotalonil", eiq: 24.7 }
+                    ]
+                },
+                {
+                    id: "lote-c",
+                    nombre: "Lote C",
+                    aplicaciones: [
+                        { numero: 1, producto: "Mancozeb (dosis 2 kg/ha)", eiq: 62.8 },
+                        { numero: 2, producto: "Infinito (dosis 1.5 L/ha)", eiq: 58.0 },
+                        { numero: 3, producto: "Fluazinam", eiq: 12.5 }
+                    ]
+                }
+            ]
+        };
+
+        // State variables
+        let selectedLoteId = "lote-a";
+        const visitedLotes = new Set();
+        let rankingVisible = false;
+
+        /**
+         * Calculate accumulated totals and ranking position
+         */
+        function getProcessedData() {
+            const processedLotes = DATA.lotes.map(lote => {
+                const totalEIQ = lote.aplicaciones.reduce((sum, app) => sum + app.eiq, 0);
+                return {
+                    ...lote,
+                    totalEIQ: Number(totalEIQ.toFixed(1))
+                };
+            });
+
+            const sorted = [...processedLotes].sort((a, b) => a.totalEIQ - b.totalEIQ);
+
+            const lotesWithRank = processedLotes.map(lote => {
+                const rankIndex = sorted.findIndex(item => item.id === lote.id);
+                return {
+                    ...lote,
+                    rank: rankIndex + 1
+                };
+            });
+
+            return {
+                lotes: lotesWithRank,
+                rankedLotes: [...lotesWithRank].sort((a, b) => a.rank - b.rank)
+            };
+        }
+
+        /**
+         * Render tabs for lotes
+         */
+        function renderTabs(lotes) {
+            const container = document.getElementById("lote-tabs");
+            container.innerHTML = "";
+
+            lotes.forEach(lote => {
+                const btn = document.createElement("button");
+                const isSelected = lote.id === selectedLoteId;
+                const isVisited = visitedLotes.has(lote.id);
+                
+                btn.className = `tab-btn ${isSelected ? 'active' : ''} ${isVisited ? 'visited-indicator' : ''}`;
+                btn.textContent = lote.nombre;
+                btn.setAttribute("role", "tab");
+                btn.setAttribute("aria-selected", isSelected);
+                btn.onclick = () => selectLote(lote.id);
+                
+                container.appendChild(btn);
+            });
+        }
+
+        /**
+         * Render detailed view of selected lote
+         */
+        function renderLoteDetail(lotes) {
+            const container = document.getElementById("lote-detail-content");
+            const lote = lotes.find(l => l.id === selectedLoteId);
+
+            if (!lote) return;
+
+            const rowsHtml = lote.aplicaciones.map(app => `
+                <tr>
+                    <td style="font-weight: 500; color: var(--text-muted);">Aplicación ${app.numero}</td>
+                    <td style="font-weight: 600;">${app.producto}</td>
+                    <td class="text-right font-mono" style="font-weight: 700;">${app.eiq.toFixed(1)}</td>
+                </tr>
+            `).join("");
+
+            container.innerHTML = `
+                <div class="details-summary-box">
+                    <div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700;">${lote.nombre}</h3>
+                        <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            Listado de aplicaciones realizadas en la campaña.
+                        </p>
+                    </div>
+                    <div class="total-eiq-box">
+                        <span class="label">EIQ Field Use Acumulado</span>
+                        <span class="value">${lote.totalEIQ.toFixed(1)}</span>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Orden</th>
+                                <th>Producto Comercial / Dosis</th>
+                                <th class="text-right">EIQ Field Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        /**
+         * Render ranking cards when revealed
+         */
+        function renderRankingCards(rankedLotes) {
+            const container = document.getElementById("ranking-cards");
+            container.innerHTML = "";
+
+            rankedLotes.forEach(lote => {
+                const card = document.createElement("div");
+                card.className = `ranking-card ${lote.rank === 1 ? 'rank-1' : ''}`;
+
+                card.innerHTML = `
+                    <div>
+                        <span class="rank-badge">Posición #${lote.rank}</span>
+                        <h3 class="ranking-card-title">${lote.nombre}</h3>
+                    </div>
+                    <div class="ranking-card-value">
+                        <span class="label">EIQ Acumulado</span>
+                        <span class="number">${lote.totalEIQ.toFixed(1)}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /**
+         * Check if all lotes have been visited to enable "Más información" button
+         */
+        function updateMoreInfoButtonState() {
+            const allVisited = DATA.lotes.every(lote => visitedLotes.has(lote.id));
+            const btn = document.getElementById("btn-more-info");
+            const hint = document.getElementById("visited-hint");
+
+            if (allVisited) {
+                btn.disabled = false;
+                hint.textContent = "Haz clic para ver la información comparativa.";
+            } else {
+                btn.disabled = true;
+                const remaining = DATA.lotes.length - visitedLotes.size;
+                hint.textContent = `Consulta los tres lotes para habilitar. (Faltan ${remaining})`;
+            }
+        }
+
+        /**
+         * Select a lote tab
+         */
+        function selectLote(loteId) {
+            selectedLoteId = loteId;
+            visitedLotes.add(loteId);
+
+            const data = getProcessedData();
+            renderTabs(data.lotes);
+            renderLoteDetail(data.lotes);
+            updateMoreInfoButtonState();
+        }
+
+        /**
+         * Toggle ranking section visibility on "Más información" click
+         */
+        function toggleRanking() {
+            const allVisited = DATA.lotes.every(lote => visitedLotes.has(lote.id));
+            if (!allVisited) return;
+
+            rankingVisible = !rankingVisible;
+            const section = document.getElementById("ranking-section");
+            const btn = document.getElementById("btn-more-info");
+
+            if (rankingVisible) {
+                section.classList.add("visible");
+                btn.textContent = "Ocultar información";
+                section.scrollIntoView({ behavior: "smooth" });
+            } else {
+                section.classList.remove("visible");
+                btn.textContent = "Más información";
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("producer-name").textContent = DATA.productor;
+
+            const processedData = getProcessedData();
+            renderRankingCards(processedData.rankedLotes);
+
+            // Select initial lot and mark as visited
+            selectLote(selectedLoteId);
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# Lucca-ISAIA
+# Lucca-Isaia
 
 **Florencia Lucca** — Maestría en Inteligencia Artificial
 
