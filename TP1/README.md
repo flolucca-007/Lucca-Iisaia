@@ -126,6 +126,6 @@ en cada iteración, se encuentra en `prompts.md`.
 
 ## Archivos incluidos
 
-- `Lucca-Isaia_app.html` — aplicación funcional.
+- `Lucca-Iisaia_app.html` — aplicación funcional.
 - `prompts.md` — historial de prompts utilizados con el agente de IA.
 - `README.md` — este archivo.
