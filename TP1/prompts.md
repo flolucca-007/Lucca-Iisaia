@@ -1,4 +1,4 @@
-# Historial de Prompts — TP1 ISAIA
+# Historial de Prompts — TP1 IISAIA
 
 ## Prompt 1 — Versión inicial funcional
 
