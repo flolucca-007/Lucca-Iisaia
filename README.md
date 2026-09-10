@@ -1,8 +1,8 @@
-# Lucca-Isaia
+# Lucca-Iisaia
 
 **Florencia Lucca** — Maestría en Inteligencia Artificial
 
-Materia: Introducción a la Ingeniería de Software Asistida por IA (ISAIA)
+Materia: Introducción a la Ingeniería de Software Asistida por IA (IISAIA)
 
 Este repositorio contiene los trabajos prácticos de la materia, organizados por carpeta:
 
