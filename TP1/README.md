@@ -1,6 +1,6 @@
 **Autora:** Florencia Lucca
 
-**Materia:** Introducción a la Ingeniería de Software Asistida por IA (ISAIA) — Maestría en Inteligencia Artificial
+**Materia:** Introducción a la Ingeniería de Software Asistida por IA (IISAIA) — Maestría en Inteligencia Artificial
 
 **Trabajo Práctico N°1**
 
@@ -88,6 +88,19 @@ etiqueta genérica, sin vista comparativa directa). La aplicación es
 completamente funcional y los cálculos son correctos; lo que se dificultó 
 a propósito es el camino para llegar a la información, no la información 
 en sí. El detalle del proceso de diseño está documentado en `prompts.md`.
+La fricción central es obligar a recorrer los tres lotes de forma 
+individual antes de habilitar el ranking. No es una limitación técnica 
+ni un descuido: es la incomodidad que el TP pide demostrar. Quien evalúa 
+el impacto ambiental de varios programas de fungicidas necesita 
+justamente eso, un comparativo entre lotes, y la interfaz retrasa lo 
+único que se buscaba desde el principio, obligando a sostener los 
+valores de cada lote de memoria (o a tomar nota aparte) porque la app 
+nunca los muestra juntos hasta el final. El botón "Más información" 
+refuerza esto con una etiqueta genérica que no anticipa que ahí está el 
+ranking, y la eliminación de la tabla "Resumen General de Lotes" quita 
+la única vista que hubiera permitido comparar de un vistazo. Cuantos más 
+lotes se comparen, peor escala esta fricción: no es un costo fijo, crece 
+con el caso de uso real.
 
 ## Cómo usar la aplicación
 
