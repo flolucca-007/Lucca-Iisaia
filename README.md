@@ -7,7 +7,7 @@ Materia: Introducción a la Ingeniería de Software Asistida por IA (IISAIA)
 Este repositorio contiene los trabajos prácticos de la materia, organizados por carpeta:
 
 - `TP1/` — Evaluación de impacto ambiental EIQ en programas de fungicidas (papa)
-- `TP2/` — (pendiente)
+- `TP2/` — Contrato OpenAPI para la gestión de ensayos y labores (EEA Balcarce)
 - `TP-final/` — (pendiente)
 
 Cada carpeta incluye su propio README con la descripción específica del trabajo.
