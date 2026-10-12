@@ -1,0 +1,759 @@
+openapi: 3.0.3
+info:
+  title: API de Ensayos y Labores (EEA Balcarce)
+  version: 0.1.0
+  description: |
+    Contrato para la gestión coordinada de ensayos agronómicos y de las solicitudes de
+    labores que ejecuta la Cooperadora. Primera etapa de una posible aplicación interna
+    (mapa, identificación por QR, historial de manejo, acceso a datos para análisis).
+
+    Reglas generales:
+    * Cada solicitud de labor pertenece a un único ensayo y solo se accede a ella a través
+      del path de ese ensayo.
+    * Estados de una solicitud: pendiente, realizada, cancelada. La validación de la
+      Cooperadora se registra aparte y solo procede sobre una labor realizada.
+    * Plazos en días corridos (incluye fines de semana y feriados). El máximo general es
+      de 4 días desde la fecha de solicitud. El servidor calcula la fecha límite; el
+      solicitante puede indicar una fecha anterior si la labor lo requiere.
+    * Si la fecha límite vence sin ejecución, corresponde la intervención de la
+      Cooperadora para acordar un plan B (acción reprogramar). Esta API no genera alertas.
+    * Las personas se identifican con un texto (identificador interno). Los permisos
+      detallados quedan para una implementación futura.
+
+    Fuera de alcance: parcelas, tratamientos experimentales, evaluaciones privadas,
+    cálculos agronómicos, integración meteorológica, alertas automáticas y gestión
+    territorial.
+
+    Todos los ejemplos de este documento son ficticios.
+servers:
+  - url: https://api.ejemplo.invalid/v1
+    description: Servidor ficticio, solo ilustrativo.
+tags:
+  - name: Ensayos
+  - name: Labores
+
+paths:
+  /ensayos:
+    get:
+      tags: [Ensayos]
+      summary: Listar ensayos
+      operationId: listarEnsayos
+      parameters:
+        - name: cultivo
+          in: query
+          required: false
+          description: Filtra por cultivo.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de ensayos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ensayo'
+    post:
+      tags: [Ensayos]
+      summary: Crear un ensayo
+      operationId: crearEnsayo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnsayoEntrada'
+            examples:
+              ensayoFicticio:
+                summary: Ejemplo ficticio
+                value:
+                  codigo: ENS-FICT-001
+                  cultivo: papa
+                  campania: 2025-26
+                  lote: Lote ficticio A
+                  ubicacion:
+                    latitud: -37.7512
+                    longitud: -58.3021
+                  responsable: investigador-ficticio-01
+      responses:
+        '201':
+          description: Ensayo creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ensayo'
+        '400':
+          $ref: '#/components/responses/SolicitudInvalida'
+        '409':
+          description: Ya existe un ensayo con ese código.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ensayos/{ensayoId}:
+    parameters:
+      - $ref: '#/components/parameters/EnsayoId'
+    get:
+      tags: [Ensayos]
+      summary: Obtener un ensayo
+      operationId: obtenerEnsayo
+      responses:
+        '200':
+          description: Ensayo encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ensayo'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+
+  /ensayos/{ensayoId}/labores:
+    parameters:
+      - $ref: '#/components/parameters/EnsayoId'
+    get:
+      tags: [Labores]
+      summary: Listar las solicitudes de labores de un ensayo
+      description: Devuelve el historial de manejo del ensayo, incluidas las solicitudes canceladas.
+      operationId: listarLabores
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoLabor'
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/TipoLabor'
+      responses:
+        '200':
+          description: Lista de solicitudes del ensayo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Labor'
+        '400':
+          $ref: '#/components/responses/SolicitudInvalida'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+    post:
+      tags: [Labores]
+      summary: Crear una solicitud de labor
+      description: |
+        Crea la solicitud en estado pendiente. El servidor asigna id, fechaSolicitud y,
+        si no se envía, fechaLimite = fecha de solicitud + 4 días corridos.
+        Si se envía fechaLimite, debe estar entre la fecha de solicitud y ese máximo;
+        en caso contrario responde 400.
+      operationId: crearLabor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LaborEntrada'
+            examples:
+              riego:
+                summary: Ejemplo ficticio de riego
+                value:
+                  tipo: riego
+                  solicitante: investigador-ficticio-01
+                  instrucciones:
+                    parametros:
+                      - nombre: lamina
+                        valor: 20
+                        unidad: mm
+                    observaciones: Regar antes del mediodía (ejemplo ficticio).
+              preparacionSector:
+                summary: Ejemplo ficticio de preparación general de sector
+                value:
+                  tipo: preparacion_terreno
+                  alcance: sector_general
+                  descripcionSector: Sector ficticio norte, compartido con otros ensayos.
+                  solicitante: investigador-ficticio-02
+                  fechaLimite: '2026-10-14'
+                  instrucciones:
+                    parametros:
+                      - nombre: profundidad_labranza
+                        valor: 20
+                        unidad: cm
+                    observaciones: Labor previa a la implantación (ejemplo ficticio).
+      responses:
+        '201':
+          description: Solicitud creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Labor'
+        '400':
+          $ref: '#/components/responses/SolicitudInvalida'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+
+  /ensayos/{ensayoId}/labores/{laborId}:
+    parameters:
+      - $ref: '#/components/parameters/EnsayoId'
+      - $ref: '#/components/parameters/LaborId'
+    get:
+      tags: [Labores]
+      summary: Obtener una solicitud de labor
+      operationId: obtenerLabor
+      responses:
+        '200':
+          description: Solicitud encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Labor'
+              examples:
+                riegoRealizadoValidado:
+                  summary: Ejemplo ficticio de riego realizado y validado
+                  value:
+                    id: 3f1c2a9e-0000-4000-8000-000000000101
+                    ensayoId: 7a2b4c6d-0000-4000-8000-000000000001
+                    tipo: riego
+                    alcance: ensayo
+                    estado: realizada
+                    solicitante: investigador-ficticio-01
+                    fechaSolicitud: '2026-10-05T09:15:00-03:00'
+                    fechaLimite: '2026-10-09'
+                    instrucciones:
+                      parametros:
+                        - nombre: lamina
+                          valor: 20
+                          unidad: mm
+                    asignacion:
+                      agenteAsignado: agente-ficticio-03
+                      asignadoPor: cooperadora-ficticia-01
+                      fechaAsignacion: '2026-10-05T11:00:00-03:00'
+                    ejecucion:
+                      ejecutor: agente-ficticio-03
+                      fechaEfectiva: '2026-10-06T08:30:00-03:00'
+                      registradoPor: cooperadora-ficticia-01
+                      fechaRegistro: '2026-10-06T14:10:00-03:00'
+                      ejecutado:
+                        parametros:
+                          - nombre: lamina
+                            valor: 18
+                            unidad: mm
+                      metodo: aspersión
+                      diferencias: Se aplicaron 18 mm en lugar de 20 mm (ejemplo ficticio).
+                    validacion:
+                      validadoPor: cooperadora-ficticia-01
+                      fechaValidacion: '2026-10-07T10:00:00-03:00'
+                    reprogramaciones: []
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+    patch:
+      tags: [Labores]
+      summary: Actualizar una solicitud de labor
+      description: |
+        Aplica una acción por llamada, indicada en el campo accion.
+
+        | accion | estado requerido | resultado |
+        |---|---|---|
+        | asignar | pendiente | registra el agente designado por la Cooperadora |
+        | registrar_ejecucion | pendiente y con agente asignado | estado pasa a realizada |
+        | cancelar | pendiente | estado pasa a cancelada, con motivo |
+        | validar | realizada y sin validación previa | registra validación; el estado no cambia |
+        | reprogramar | pendiente | conserva la fecha límite anterior, el impedimento y la alternativa; actualiza fechaLimite |
+
+        Una acción no permitida para el estado actual responde 409. Las fechas de
+        asignación, registro, cancelación y validación las asigna el servidor.
+      operationId: actualizarLabor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LaborActualizacion'
+            examples:
+              registrarEjecucion:
+                summary: Ejemplo ficticio de registro de ejecución
+                value:
+                  accion: registrar_ejecucion
+                  ejecutor: agente-ficticio-03
+                  registradoPor: cooperadora-ficticia-01
+                  fechaEfectiva: '2026-10-06T08:30:00-03:00'
+                  ejecutado:
+                    parametros:
+                      - nombre: lamina
+                        valor: 18
+                        unidad: mm
+                  metodo: aspersión
+                  diferencias: Se aplicaron 18 mm en lugar de 20 mm (ejemplo ficticio).
+              cancelar:
+                summary: Ejemplo ficticio de cancelación
+                value:
+                  accion: cancelar
+                  canceladoPor: investigador-ficticio-01
+                  motivo: El ensayo ficticio ya no requiere la labor.
+              reprogramar:
+                summary: Ejemplo ficticio de reprogramación
+                value:
+                  accion: reprogramar
+                  impedimento: Suelo anegado (ejemplo ficticio).
+                  alternativa: Ejecutar cuando el suelo permita el ingreso.
+                  nuevaFechaLimite: '2026-10-12'
+                  acordadoPor: cooperadora-ficticia-01
+              validar:
+                summary: Ejemplo ficticio de validación
+                value:
+                  accion: validar
+                  validadoPor: cooperadora-ficticia-01
+      responses:
+        '200':
+          description: Solicitud actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Labor'
+        '400':
+          $ref: '#/components/responses/SolicitudInvalida'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          $ref: '#/components/responses/ConflictoDeEstado'
+    delete:
+      tags: [Labores]
+      summary: Eliminar una solicitud cargada por error
+      description: |
+        Solo elimina solicitudes en estado pendiente cargadas por error, por ejemplo
+        duplicados. Una solicitud real que deja de necesitarse se cancela (PATCH con
+        accion cancelar) y permanece en el historial. Las labores realizadas y las
+        solicitudes canceladas no se eliminan.
+      operationId: eliminarLabor
+      responses:
+        '204':
+          description: Solicitud eliminada. Sin cuerpo.
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          $ref: '#/components/responses/ConflictoDeEstado'
+
+components:
+  parameters:
+    EnsayoId:
+      name: ensayoId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LaborId:
+      name: laborId
+      in: path
+      required: true
+      description: Identificador de la solicitud. Si no pertenece al ensayo del path, responde 404.
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    SolicitudInvalida:
+      description: Cuerpo o parámetros inválidos (campos faltantes, tipos o formatos incorrectos, fecha límite fuera del máximo).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            codigo: FECHA_LIMITE_FUERA_DE_PLAZO
+            mensaje: La fecha límite supera el máximo de 4 días corridos desde la solicitud.
+    NoEncontrado:
+      description: El ensayo no existe, o la solicitud no existe dentro de ese ensayo.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            codigo: NO_ENCONTRADO
+            mensaje: No existe la solicitud indicada dentro del ensayo.
+    ConflictoDeEstado:
+      description: |
+        El estado actual de la solicitud no permite la operación. Por ejemplo: eliminar o
+        cancelar una labor realizada, validar una labor no realizada, o registrar la
+        ejecución de una labor sin agente asignado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            eliminarNoPendiente:
+              summary: Ejemplo ficticio
+              value:
+                codigo: ESTADO_NO_PERMITE_OPERACION
+                mensaje: Solo se pueden eliminar solicitudes en estado pendiente.
+            ejecucionSinAgente:
+              summary: Ejemplo ficticio
+              value:
+                codigo: SIN_AGENTE_ASIGNADO
+                mensaje: La Cooperadora debe designar un agente antes de registrar la ejecución.
+
+  schemas:
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+        mensaje:
+          type: string
+
+    Ubicacion:
+      type: object
+      description: Punto de referencia del ensayo en grados decimales (WGS84).
+      required: [latitud, longitud]
+      properties:
+        latitud:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitud:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+
+    EnsayoEntrada:
+      type: object
+      required: [codigo, cultivo, lote, ubicacion, responsable]
+      properties:
+        codigo:
+          type: string
+          description: Identificador legible del ensayo, único. Pensado para etiquetas QR futuras.
+        cultivo:
+          type: string
+        campania:
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+          description: Campaña agrícola, por ejemplo 2025-26.
+        lote:
+          type: string
+        ubicacion:
+          $ref: '#/components/schemas/Ubicacion'
+        responsable:
+          type: string
+          description: Identificador de la persona responsable del ensayo.
+
+    Ensayo:
+      allOf:
+        - $ref: '#/components/schemas/EnsayoEntrada'
+        - type: object
+          required: [id, fechaAlta]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fechaAlta:
+              type: string
+              format: date-time
+
+    TipoLabor:
+      type: string
+      enum: [preparacion_terreno, siembra_plantacion, riego, fertilizacion, aplicacion_fitosanitaria]
+
+    EstadoLabor:
+      type: string
+      enum: [pendiente, realizada, cancelada]
+
+    AlcanceLabor:
+      type: string
+      enum: [ensayo, sector_general]
+      default: ensayo
+      description: |
+        sector_general solo se usa con tipo preparacion_terreno, para registrar en el
+        historial de cada ensayo afectado una preparación previa a la implantación.
+        Requiere descripcionSector. No introduce gestión territorial.
+
+    Parametro:
+      type: object
+      description: Dato cuantitativo de una labor, por ejemplo lámina de riego o dosis.
+      required: [nombre, valor, unidad]
+      properties:
+        nombre:
+          type: string
+          example: lamina
+        valor:
+          type: number
+          format: double
+          minimum: 0
+        unidad:
+          type: string
+          example: mm
+
+    DetalleLabor:
+      type: object
+      description: Estructura común para lo solicitado y lo ejecutado. Productos, equipos u otros datos no numéricos van en observaciones.
+      properties:
+        parametros:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parametro'
+        observaciones:
+          type: string
+
+    LaborEntrada:
+      description: |
+        Dos variantes válidas:
+        * alcance ensayo (o sin alcance): cualquier tipo de labor.
+        * alcance sector_general: solo tipo preparacion_terreno y con descripcionSector obligatoria.
+      allOf:
+        - $ref: '#/components/schemas/LaborEntradaBase'
+        - oneOf:
+            - type: object
+              properties:
+                alcance:
+                  type: string
+                  enum: [ensayo]
+            - type: object
+              required: [alcance, descripcionSector]
+              properties:
+                alcance:
+                  type: string
+                  enum: [sector_general]
+                tipo:
+                  type: string
+                  enum: [preparacion_terreno]
+                descripcionSector:
+                  type: string
+                  minLength: 1
+
+    LaborEntradaBase:
+      type: object
+      required: [tipo, solicitante, instrucciones]
+      properties:
+        tipo:
+          $ref: '#/components/schemas/TipoLabor'
+        alcance:
+          $ref: '#/components/schemas/AlcanceLabor'
+        descripcionSector:
+          type: string
+          description: Obligatoria si alcance es sector_general.
+        solicitante:
+          type: string
+          description: Investigador o especialista autorizado que solicita la labor.
+        fechaLimite:
+          type: string
+          format: date
+          description: Opcional. Solo para fijar un plazo menor al máximo de 4 días corridos.
+        instrucciones:
+          $ref: '#/components/schemas/DetalleLabor'
+
+    Asignacion:
+      type: object
+      required: [agenteAsignado, asignadoPor, fechaAsignacion]
+      properties:
+        agenteAsignado:
+          type: string
+        asignadoPor:
+          type: string
+        fechaAsignacion:
+          type: string
+          format: date-time
+
+    Ejecucion:
+      type: object
+      required: [ejecutor, fechaEfectiva, registradoPor, fechaRegistro, ejecutado]
+      properties:
+        ejecutor:
+          type: string
+          description: Agente que realizó la labor.
+        fechaEfectiva:
+          type: string
+          format: date-time
+          description: Momento en que se realizó la labor.
+        registradoPor:
+          type: string
+          description: Persona que cargó el registro; puede diferir del ejecutor.
+        fechaRegistro:
+          type: string
+          format: date-time
+          description: Momento de carga, asignado por el servidor.
+        ejecutado:
+          $ref: '#/components/schemas/DetalleLabor'
+        metodo:
+          type: string
+        diferencias:
+          type: string
+          description: Diferencias respecto de lo solicitado.
+
+    Validacion:
+      type: object
+      required: [validadoPor, fechaValidacion]
+      properties:
+        validadoPor:
+          type: string
+        fechaValidacion:
+          type: string
+          format: date-time
+
+    Cancelacion:
+      type: object
+      required: [motivo, canceladoPor, fechaCancelacion]
+      properties:
+        motivo:
+          type: string
+        canceladoPor:
+          type: string
+        fechaCancelacion:
+          type: string
+          format: date-time
+
+    Reprogramacion:
+      type: object
+      required: [fechaLimiteAnterior, impedimento, alternativa, nuevaFechaLimite, acordadoPor, fechaAcuerdo]
+      properties:
+        fechaLimiteAnterior:
+          type: string
+          format: date
+          description: Fecha límite vigente antes de esta reprogramación. En la primera coincide con la original.
+        impedimento:
+          type: string
+        alternativa:
+          type: string
+          description: Plan B acordado con la Cooperadora.
+        nuevaFechaLimite:
+          type: string
+          format: date
+        acordadoPor:
+          type: string
+        fechaAcuerdo:
+          type: string
+          format: date-time
+
+    Labor:
+      type: object
+      required: [id, ensayoId, tipo, alcance, estado, solicitante, fechaSolicitud, fechaLimite, instrucciones, reprogramaciones]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ensayoId:
+          type: string
+          format: uuid
+        tipo:
+          $ref: '#/components/schemas/TipoLabor'
+        alcance:
+          $ref: '#/components/schemas/AlcanceLabor'
+        descripcionSector:
+          type: string
+        estado:
+          $ref: '#/components/schemas/EstadoLabor'
+        solicitante:
+          type: string
+        fechaSolicitud:
+          type: string
+          format: date-time
+        fechaLimite:
+          type: string
+          format: date
+          description: Fecha límite vigente. Las anteriores quedan en reprogramaciones.
+        instrucciones:
+          $ref: '#/components/schemas/DetalleLabor'
+        asignacion:
+          $ref: '#/components/schemas/Asignacion'
+        ejecucion:
+          $ref: '#/components/schemas/Ejecucion'
+        validacion:
+          $ref: '#/components/schemas/Validacion'
+        cancelacion:
+          $ref: '#/components/schemas/Cancelacion'
+        reprogramaciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reprogramacion'
+
+    LaborActualizacion:
+      oneOf:
+        - $ref: '#/components/schemas/AccionAsignar'
+        - $ref: '#/components/schemas/AccionRegistrarEjecucion'
+        - $ref: '#/components/schemas/AccionCancelar'
+        - $ref: '#/components/schemas/AccionValidar'
+        - $ref: '#/components/schemas/AccionReprogramar'
+      discriminator:
+        propertyName: accion
+        mapping:
+          asignar: '#/components/schemas/AccionAsignar'
+          registrar_ejecucion: '#/components/schemas/AccionRegistrarEjecucion'
+          cancelar: '#/components/schemas/AccionCancelar'
+          validar: '#/components/schemas/AccionValidar'
+          reprogramar: '#/components/schemas/AccionReprogramar'
+
+    AccionAsignar:
+      type: object
+      required: [accion, agenteAsignado, asignadoPor]
+      properties:
+        accion:
+          type: string
+          enum: [asignar]
+        agenteAsignado:
+          type: string
+        asignadoPor:
+          type: string
+
+    AccionRegistrarEjecucion:
+      type: object
+      required: [accion, ejecutor, registradoPor, fechaEfectiva, ejecutado]
+      properties:
+        accion:
+          type: string
+          enum: [registrar_ejecucion]
+        ejecutor:
+          type: string
+        registradoPor:
+          type: string
+        fechaEfectiva:
+          type: string
+          format: date-time
+        ejecutado:
+          $ref: '#/components/schemas/DetalleLabor'
+        metodo:
+          type: string
+        diferencias:
+          type: string
+
+    AccionCancelar:
+      type: object
+      required: [accion, motivo, canceladoPor]
+      properties:
+        accion:
+          type: string
+          enum: [cancelar]
+        motivo:
+          type: string
+          minLength: 1
+        canceladoPor:
+          type: string
+
+    AccionValidar:
+      type: object
+      required: [accion, validadoPor]
+      properties:
+        accion:
+          type: string
+          enum: [validar]
+        validadoPor:
+          type: string
+
+    AccionReprogramar:
+      type: object
+      required: [accion, impedimento, alternativa, nuevaFechaLimite, acordadoPor]
+      properties:
+        accion:
+          type: string
+          enum: [reprogramar]
+        impedimento:
+          type: string
+        alternativa:
+          type: string
+        nuevaFechaLimite:
+          type: string
+          format: date
+          description: Acordada con la Cooperadora; puede superar el máximo general de 4 días.
+        acordadoPor:
+          type: string
