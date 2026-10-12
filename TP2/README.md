@@ -8,7 +8,9 @@ Pegar el contenido de [openapi.yaml](openapi.yaml) en [editor.swagger.io](https:
 
 ## Qué me propuse construir
 
-En la EEA Balcarce, el investigador pide una labor (un riego, una fertilización, una aplicación) y la Cooperadora designa a alguien para hacerla. Este contrato describe ese circuito: quién pide, quién ejecuta, quién carga el registro, qué se pidió y qué se hizo realmente.
+La EEA Balcarce es la Estación Experimental Agropecuaria del INTA (Instituto Nacional de Tecnología Agropecuaria) ubicada en Balcarce, provincia de Buenos Aires, donde se conducen ensayos agronómicos a campo. Las labores de campo de esos ensayos las realiza la Cooperadora de la Estación.
+
+En ese circuito, el investigador pide una labor (un riego, una fertilización, una aplicación) y la Cooperadora designa a alguien para hacerla. Este contrato describe ese circuito: quién pide, quién ejecuta, quién carga el registro, qué se pidió y qué se hizo realmente.
 
 El TP es el punto de partida de una aplicación real de manejo de ensayos para la Estación, que pienso completar aprovechando lo aprendido en la materia. Las etapas siguientes son un mapa de ensayos, la identificación por QR en el campo, el historial de manejo y el acceso a datos para análisis. Por eso el contrato cubre un recorte chico pero real, y deja afuera a propósito parcelas, tratamientos, evaluaciones, cálculos agronómicos, meteorología, alertas y permisos detallados.
 
