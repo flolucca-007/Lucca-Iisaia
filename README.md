@@ -8,6 +8,6 @@ Este repositorio contiene los trabajos prácticos de la materia, organizados por
 
 - `TP1/` — Evaluación de impacto ambiental EIQ en programas de fungicidas (papa)
 - `TP2/` — Contrato OpenAPI para la gestión de ensayos y labores (EEA Balcarce)
-- `TP-final/` — (pendiente)
+- `TP-final/` Guardia Viva, gestión de guardias médicas (trabajo grupal)
 
 Cada carpeta incluye su propio README con la descripción específica del trabajo.
